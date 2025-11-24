@@ -19,6 +19,8 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!--<link rel="stylesheet" href="/public/admin/assets/css/style.css">-->
+    <!--UPDATE LATER WHEN INLINE MOVED TO /public/admin/assets/css/style.css -->
     <style>
         body {
             background-color: #fff0f5;
@@ -512,7 +514,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                     </h5>
                                 </div>
                                 <div id="collapseCategoryA" class="collapse">
-                                    <img src="assets/img/sockets.png" class="img-fluid d-block mx-auto mt-2" alt="socket"
+                                    <img src="/public/admin/assets/img/sockets.png" class="img-fluid d-block mx-auto mt-2" alt="socket"
                                         style="width: 40%;">
                                     <div class="card-body">
                                         <div id="product-list-A">
@@ -542,7 +544,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                     </h5>
                                 </div>
                                 <div id="collapseCategoryB" class="collapse">
-                                    <img src="assets/img/mcb.png" class="img-fluid d-block mx-auto mt-2" alt="mcb"
+                                    <img src="/public/admin/assets/img/mcb.png" class="img-fluid d-block mx-auto mt-2" alt="mcb"
                                         style="width: 40%;">
                                     <div class="card-body">
                                         <div id="product-list-B">
@@ -573,7 +575,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                     </h5>
                                 </div>
                                 <div id="collapseCategoryC" class="collapse">
-                                    <img src="assets/img/rccb.png" class="img-fluid d-block mx-auto mt-2" alt="rccb"
+                                    <img src="/public/admin/assets/img/rccb.png" class="img-fluid d-block mx-auto mt-2" alt="rccb"
                                         style="width: 40%;">
                                     <div class="card-body">
                                         <div id="product-list-C">
@@ -602,7 +604,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                     </h5>
                                 </div>
                                 <div id="collapseCategoryD" class="collapse">
-                                    <img src="assets/img/connectors.png" class="img-fluid d-block mx-auto mt-2"
+                                    <img src="/public/admin/assets/img/connectors.png" class="img-fluid d-block mx-auto mt-2"
                                         alt="connectors" style="width: 40%;">
                                     <div class="card-body">
                                         <div id="product-list-D">
@@ -634,7 +636,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                     </h5>
                                 </div>
                                 <div id="collapseCategoryE" class="collapse">
-                                    <img src="assets/img/plugs.png" class="img-fluid d-block mx-auto mt-2" alt="plugs"
+                                    <img src="/public/admin/assets/img/plugs.png" class="img-fluid d-block mx-auto mt-2" alt="plugs"
                                         style="width: 40%;">
                                     <div class="card-body">
                                         <div id="product-list-E">
@@ -663,7 +665,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                     </h5>
                                 </div>
                                 <div id="collapseCategoryF" class="collapse">
-                                    <img src="assets/img/inlet.png" class="img-fluid d-block mx-auto mt-2" alt="inlet"
+                                    <img src="/public/admin/assets/img/inlet.png" class="img-fluid d-block mx-auto mt-2" alt="inlet"
                                         style="width: 40%;">
                                     <div class="card-body">
                                         <div id="product-list-F">
@@ -694,7 +696,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                     </h5>
                                 </div>
                                 <div id="collapseCategoryG" class="collapse">
-                                    <img src="assets/img/led.png" class="img-fluid d-block mx-auto mt-2" alt="led"
+                                    <img src="/public/admin/assets/img/led.png" class="img-fluid d-block mx-auto mt-2" alt="led"
                                         style="width: 40%;">
                                     <div class="card-body">
                                         <div id="product-list-G">
@@ -724,7 +726,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                     </h5>
                                 </div>
                                 <div id="collapseCategoryH" class="collapse">
-                                    <img src="assets/img/accessories.png" class="img-fluid d-block mx-auto mt-2"
+                                    <img src="/public/admin/assets/img/accessories.png" class="img-fluid d-block mx-auto mt-2"
                                         alt="accessories" style="width: 40%;">
                                     <div class="card-body">
                                         <div id="product-list-H">
@@ -760,11 +762,11 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                         data-bs-ride="carousel" data-bs-interval="4000" data-bs-pause="false">
                                         <div class="carousel-inner">
                                             <div class="carousel-item active">
-                                                <img src="assets/img/board_material1.png" class="d-block w-100 mx-auto mt-2"
+                                                <img src="/public/admin/assets/img/board_material1.png" class="d-block w-100 mx-auto mt-2"
                                                     alt="Board Material 1" style="width: 40%; max-width: 40%;">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="assets/img/board_material2.png" class="d-block w-100 mx-auto mt-2"
+                                                <img src="/public/admin/assets/img/board_material2.png" class="d-block w-100 mx-auto mt-2"
                                                     alt="Board Material 2" style="width: 40%; max-width: 40%;">
                                             </div>
                                             <div class="carousel-item">
@@ -801,7 +803,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                     </h5>
                                 </div>
                                 <div id="collapseCategoryJ" class="collapse">
-                                    <img src="assets/img/add-ons.png" class="img-fluid d-block mx-auto mt-2" alt="add-ons"
+                                    <img src="/public/admin/assets/img/add-ons.png" class="img-fluid d-block mx-auto mt-2" alt="add-ons"
                                         style="width: 40%;">
                                     <div class="card-body">
                                         <div id="product-list-J">
@@ -1280,7 +1282,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                 return grouped;
             }
 
-            fetch('api/get-products.php')
+            fetch('/public/admin/api/get-products.php')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);

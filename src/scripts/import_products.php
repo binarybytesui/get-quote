@@ -3,10 +3,10 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once "../db/connection.php";
+require_once __DIR__ . "/../database/connection.php";
 $pdo = db();
 
-$jsonPath = "../admin/assets/js/products.json";
+$jsonPath = "/../json/products.json";
 
 if (!file_exists($jsonPath)) {
     die("products.json not found");

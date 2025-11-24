@@ -1,6 +1,6 @@
 <?php
 header("Content-Type: application/json");
-require_once "../../db/connection.php";
+require_once __DIR__ . "/../../../src/database/connection.php";
 $pdo = db();
 
 $category = $_GET["category"] ?? null;
@@ -21,12 +21,8 @@ foreach ($data as $row) {
         "id" => $row["id"],
         "category" => $row["category"],
         "name" => $row["name"],
-        "partNo" => $row["part_no"],                   // FIX
-        "Main_Price" => $row["main_price"],            // FIX
-        "Discount_in_%" => $row["discount_percent"],   // FIX
-        "price" => $row["price"],                      // FIX
-        "Labour_Charges" => $row["labour_charges"],    // FIX
-        "Wire_Cost" => $row["wire_cost"],              // FIX
+        "partNo" => $row["part_no"],            // FIX
+        "price" => $row["price"],               // For hidden calculations
     ];
 }
 

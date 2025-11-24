@@ -26,7 +26,8 @@ if (!$is_logged_in) {
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+    <!--<link rel="stylesheet" href="/public/admin/assets/css/style.css">-->
+    <!--UPDATE LATER WHEN INLINE MOVED TO /public/admin/assets/css/style.css -->
     <style>
         /* Custom styles for the invoice, combining and prioritizing ztemplate.html's look */
         body {
@@ -224,93 +225,46 @@ if (!$is_logged_in) {
         }
 
         /* This CSS creates a floating action button styled for a JSON icon.
- * It uses a deep blue color commonly associated with JSON files.
- */
-        @keyframes bounce {
-
-            0%,
-            20%,
-            50%,
-            80%,
-            100% {
-                transform: translateY(0);
-            }
-
-            40% {
-                transform: translateY(-20px);
-            }
-
-            60% {
-                transform: translateY(-10px);
-            }
-
-            75% {
-                transform: translateY(-5px);
-            }
-        }
-
-        /* The main class for our button */
-        .btn-pulse {
-            /* This animation property makes the button's box-shadow pulse continuously */
-            animation: pulse-shadow 2s infinite ease-in-out;
-        }
-
-        /* The keyframes for the pulse animation */
-        @keyframes pulse-shadow {
-
-            0%,
-            100% {
-                /* At the start and end, the shadow is small and more opaque */
-                box-shadow: #5ea6e5ff;
-            }
-
-            50% {
-                /* In the middle of the animation, the shadow expands and fades out */
-                box-shadow: 0 0 0 15px #a5c5e1ff;
-            }
-        }
-
+        * It uses a deep blue color commonly associated with JSON files.*/
         .json-fab {
-            /* Basic dimensions and shape */
+            /* Basic dimensions and shape, based on the user's provided example */
             width: 45px;
             height: 45px;
             border-radius: 50%;
+
+            /* A blue color commonly used for JSON icons */
             background-color: #3e75a6;
             color: white;
+            /* For the icon or text inside */
             border: none;
+
+            /* Centering the icon or text inside the button */
             display: flex;
             justify-content: center;
             align-items: center;
+
+            /* Font size for the icon or text */
             font-size: 20px;
+
+            /* Adding a shadow for a "floating" effect */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
             cursor: pointer;
 
-            /* Apply the bounce animation */
-            animation: pulse-shadow 3s ease-in-out infinite;
-            /*
-              NOTE: We've removed the 'transform' transition from the original
-              styles because the animation will now control the transform property.
-              The hover and active effects still work because the animation
-              is not a transition.
-            */
-            transition: box-shadow 0.2s ease-in-out;
+            /* Smooth transitions for hover effects */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
 
-        /* Hover and active states */
+        /* Hover and active states for user interaction, adapted from the example */
         .json-fab:hover {
-            /* The transform is now controlled by the bounce animation, so we
-               will need to override it here to make the hover effect work as expected */
+            /* Slightly increase size and shadow on hover */
             transform: scale(1.1);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-            /* To make sure the hover effect is not overridden by the animation,
-               you might need to pause it on hover */
-            animation-play-state: paused;
         }
 
         .json-fab:active {
+            /* Slight press-down effect */
             transform: scale(0.95);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            animation-play-state: paused;
         }
 
         /* This CSS creates a floating action button styled for a trash or delete icon.
@@ -488,7 +442,7 @@ if (!$is_logged_in) {
     <div class="invoice-document" id="element-to-print">
         <header class="d-flex justify-content-between align-items-center pb-4 mb-4 border-bottom">
             <div>
-                <img src="assets/img/main.png" alt="Company Logo" class="company-logo rounded-circle">
+                <img src="/public/admin/assets/img/main.png" alt="Company Logo" class="company-logo rounded-circle">
                 <h2 class="d-inline-block align-middle ms-3 mb-0 fw-bold">Quotation</h2>
             </div>
             <div class="text-end">
@@ -542,10 +496,10 @@ if (!$is_logged_in) {
             </div>
         </div>
 
-        <!-- <div id="emptyQuotationMessage" class="alert alert-info" style="display: none;">
+        <div id="emptyQuotationMessage" class="alert alert-info" style="display: none;">
             <p class="mb-0 text-center">No products selected for quotation. Please go back to the <a href="index.php"
                     class="alert-link">Product Selection Page</a> to select products.</p>
-        </div> -->
+        </div>
 
         <div class="row mt-4">
             <div class="col-12">
@@ -577,7 +531,6 @@ if (!$is_logged_in) {
         <!-- Only Upload JSON button remains -->
         <button class="json-fab" onclick="document.getElementById('uploadJsonInput').click()"
             title="Upload Data from JSON"><i class="bi bi-filetype-json"></i></button>
-
         <input type="file" id="uploadJsonInput" accept=".json" style="display: none;"
             onchange="uploadQuotationData(event)">
         <button class="trash-fab" onclick="showClearConfirmation()" title="Clear Content"><i
@@ -670,7 +623,7 @@ if (!$is_logged_in) {
             const totalQuantityDisplay = document.getElementById('totalquantity');
             const grandTotalDisplay = document.getElementById('grandTotal');
             const quotationDetails = document.getElementById('quotationDetails');
-            //const emptyQuotationMessage = document.getElementById('emptyQuotationMessage');
+            const emptyQuotationMessage = document.getElementById('emptyQuotationMessage');
 
             const displayCompanyName = document.getElementById('displayCompanyName');
             const displayContactPerson = document.getElementById('displayContactPerson');
@@ -694,13 +647,13 @@ if (!$is_logged_in) {
 
             quotationTableBody.innerHTML = ''; // Clear existing rows
 
-            // if (selectedProducts.length === 0) {
-            //     quotationDetails.style.display = 'none';
-            //     emptyQuotationMessage.style.display = 'block';
-            // } else {
-            //     quotationDetails.style.display = 'block';
-            //     emptyQuotationMessage.style.display = 'none';
-            // }
+            if (selectedProducts.length === 0) {
+                quotationDetails.style.display = 'none';
+                emptyQuotationMessage.style.display = 'block';
+            } else {
+                quotationDetails.style.display = 'block';
+                emptyQuotationMessage.style.display = 'none';
+            }
 
             // Determine the number of rows to iterate over (at least NUM_DEFAULT_ROWS or more if products exceed it)
             const rowsToGenerate = Math.max(selectedProducts.length, NUM_DEFAULT_ROWS);
