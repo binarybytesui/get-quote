@@ -2,7 +2,7 @@
 session_start();
 
 // Define the path to your credentials file outside the public web root
-define('CREDENTIALS_FILE', '/Applications/XAMPP/xamppfiles/htdocs/get-quote/get-quote/passwords/credentials.json'); // <--- IMPORTANT: Update this path!
+define('CREDENTIALS_FILE', '/Applications/XAMPP/xamppfiles/htdocs/get-quote/passwords/credentials.json'); // <--- IMPORTANT: Update this path!
 
 header('Content-Type: application/json'); // Set header for JSON response
 
