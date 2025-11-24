@@ -5,21 +5,25 @@ $pdo = db();
 
 $category = $_GET["category"] ?? null;
 
-if ($category) {
-    $stmt = $pdo->prepare(
-        "SELECT id, category, name, part_no 
-         FROM products 
-         WHERE category=? 
-         ORDER BY name"
-    );
-    $stmt->execute([$category]);
-    echo json_encode($stmt->fetchAll());
-    exit;
+$sql = $category
+    ? "SELECT * FROM products WHERE category=? ORDER BY name"
+    : "SELECT * FROM products ORDER BY category, name";
+
+$stmt = $pdo->prepare($sql);
+$category ? $stmt->execute([$category]) : $stmt->execute();
+
+$data = $stmt->fetchAll();
+
+// Convert snake_case → camelCase for frontend compatibility
+$converted = [];
+foreach ($data as $row) {
+    $converted[] = [
+        "id" => $row["id"],
+        "category" => $row["category"],
+        "name" => $row["name"],
+        "partNo" => $row["part_no"],            // FIX
+        "price" => $row["price"],               // For hidden calculations
+    ];
 }
 
-$stmt = $pdo->query(
-    "SELECT id, category, name, part_no 
-     FROM products 
-     ORDER BY category, name"
-);
-echo json_encode($stmt->fetchAll());
+echo json_encode($converted);
