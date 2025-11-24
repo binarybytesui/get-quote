@@ -46,8 +46,8 @@ This repository implements a simple quoting workflow where site visitors (Users)
 
 After placing the project in XAMPP `htdocs`, open in your browser:
 
- - `http://localhost/3.Quote-Final/` (shows directory or default file)
- - `http://localhost/3.Quote-Final/users/index.html` (public site)
+ - `http://localhost/GET-QUOTE/` (shows directory or default file)
+ - `http://localhost/GET-QUOTE/users/index.html` (public site)
 
 ---
 Generated: README for quick developer onboarding and safe maintenance.
@@ -58,24 +58,62 @@ Generated: README for quick developer onboarding and safe maintenance.
 This is a compact map of the repository layout as found during the scan. Use this as a quick reference when navigating the project.
 
 ```
-3.Quote-Final/
+GET-QUOTE/
 ├─ admin/
 │  ├─ index.php
 │  ├─ quote.php
 │  ├─ review.php
 │  ├─ api/
-│  │  └─ auth.php
+│  │  ├─ auth.php
+│  │  └─ get-products.php
 │  └─ assets/
-│     ├─ css/style.css
-│     ├─ js/products.json
-│     └─ img/{logo.jpg,board_material4.png}
+│     ├─ css/
+│     │  └─ style.css
+│     ├─ json-old/
+│     │  └─ products.json
+│     └─ img/
+│        ├─ main.png
+│        ├─ led.png
+│        ├─ board_material1.png
+│        ├─ board_material2.png
+│        ├─ board_material3.png
+│        ├─ accessories.png
+│        ├─ mcb.png
+│        ├─ add-ons.png
+│        ├─ connectors.png
+│        ├─ sockets.png
+│        ├─ rccb.png
+│        ├─ plugs.png
+│        └─ inlet.png
 ├─ users/
 │  ├─ index.html
 │  ├─ quote.html
+│  ├─ api/
+│  │  └─ get-products.php
 │  └─ assets/
-│     ├─ css/style.css
-│     ├─ js/products.json
-│     ├─ img/{logo.jpg,board_material4.png}
+│     ├─ css/
+│     │  └─ style.css
+│     ├─ json-old/
+│     │  └─ products.json
+│     └─ img/
+│        ├─ main.png
+│        ├─ led.png
+│        ├─ board_material1.png
+│        ├─ board_material2.png
+│        ├─ board_material3.png
+│        ├─ accessories.png
+│        ├─ mcb.png
+│        ├─ add-ons.png
+│        ├─ connectors.png
+│        ├─ sockets.png
+│        ├─ rccb.png
+│        ├─ plugs.png
+│        └─ inlet.png
+├─ db/
+│  ├─ connection-status.php
+│  └─ connection.php
+├─ scripts/
+│  └─ import_products.php
 ├─ passwords/
 │  ├─ credentials.json
 │  └─ generate_password.php
