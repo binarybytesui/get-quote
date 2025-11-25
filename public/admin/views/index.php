@@ -770,7 +770,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                                     alt="Board Material 2" style="width: 40%; max-width: 40%;">
                                             </div>
                                             <div class="carousel-item">
-                                                <img src="assets/img/board_material3.png" class="d-block w-100 mx-auto mt-2"
+                                                <img src="/get-quote/public/admin/assets/img/board_material3.png" class="d-block w-100 mx-auto mt-2"
                                                     alt="Board Material 3" style="width: 40%; max-width: 40%;">
                                             </div>
                                         </div>
