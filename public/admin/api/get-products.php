@@ -1,8 +1,25 @@
 <?php
+session_start();
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    http_response_code(403);
+    echo json_encode(["error" => "Forbidden: Admin login required"]);
+    exit;
+}
+
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("Referrer-Policy: no-referrer");
+header("X-XSS-Protection: 1; mode=block");
+
 // ----- CORS HEADERS -----
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../../../logs/error.log');
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -32,12 +49,12 @@ foreach ($data as $row) {
         "id" => $row["id"],
         "category" => $row["category"],
         "name" => $row["name"],
-        "partNo" => $row["part_no"],                   // FIX
-        "Main_Price" => $row["main_price"],            // FIX
-        "Discount_in_%" => $row["discount_percent"],   // FIX
-        "price" => $row["price"],                      // FIX
-        "Labour_Charges" => $row["labour_charges"],    // FIX
-        "Wire_Cost" => $row["wire_cost"],              // FIX
+        "partNo" => $row["part_no"],
+        "price" => $row["price"],
+        "mainPrice" => $row["main_price"],
+        "discountPercent" => $row["discount_percent"],
+        "labourCharges" => $row["labour_charges"],
+        "wireCost" => $row["wire_cost"]
     ];
 }
 

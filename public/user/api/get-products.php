@@ -1,4 +1,15 @@
 <?php
+header("Content-Type: application/json; charset=UTF-8");
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("Referrer-Policy: no-referrer");
+header("X-XSS-Protection: 1; mode=block");
+
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../../../logs/error.log');
+
+
 // ----- CORS HEADERS -----
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -9,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
+
 
 header("Content-Type: application/json");
 require_once __DIR__ . "/../../../src/database/connection.php";

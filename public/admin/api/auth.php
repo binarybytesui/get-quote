@@ -1,16 +1,25 @@
 <?php
+session_start();
+
+// ----- SECURITY HEADERS -----
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("Referrer-Policy: no-referrer");
+header("X-XSS-Protection: 1; mode=block");
+header("Content-Type: application/json; charset=UTF-8");
+
+
+
 // ----- CORS HEADERS -----
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
-// Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -21,8 +30,9 @@ require_once __DIR__ . '/../../../src/database/connection.php';
 // Define the path to your credentials file outside the public web root
 //define('CREDENTIALS_FILE', '/get-quote/src/security/credentials.json'); // <--- IMPORTANT: Update this path!
 define('CREDENTIALS_FILE', __DIR__ . '/../../../src/security/credentials.json');
+//$credentialsFile = __DIR__ . '/../../../src/security/credentials.json';
 
-header('Content-Type: application/json'); // Set header for JSON response
+
 
 // Function to safely read JSON from a file
 function readJsonFile($filePath)
@@ -49,12 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'login') {
-        $username = $_POST['username'] ?? '';
-        $password = $_POST['password'] ?? '';
-
-        // Input validation and sanitization
-        $username = trim($username);
-        $password = trim($password);
+        $username = htmlspecialchars(trim($_POST['username'] ?? ''));
+        $password = htmlspecialchars(trim($_POST['password'] ?? ''));       
+        //$username = trim($username);
+        //$password = trim($password);
 
         if (empty($username) || empty($password)) {
             echo json_encode(['success' => false, 'message' => 'Username and password are required.']);
