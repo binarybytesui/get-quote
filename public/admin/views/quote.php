@@ -442,7 +442,7 @@ if (!$is_logged_in) {
     <div class="invoice-document" id="element-to-print">
         <header class="d-flex justify-content-between align-items-center pb-4 mb-4 border-bottom">
             <div>
-                <img src="/public/admin/assets/img/main.png" alt="Company Logo" class="company-logo rounded-circle">
+                <img src="/get-quote/public/admin/assets/img/main.png" alt="Company Logo" class="company-logo rounded-circle">
                 <h2 class="d-inline-block align-middle ms-3 mb-0 fw-bold">Quotation</h2>
             </div>
             <div class="text-end">

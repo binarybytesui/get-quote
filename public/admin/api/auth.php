@@ -1,9 +1,15 @@
 <?php
 session_start();
-require_once __DIR__ . "/../../../src/database/connection.php";
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+require_once __DIR__ . '/../../../src/database/connection.php';
+
 
 // Define the path to your credentials file outside the public web root
-define('CREDENTIALS_FILE', '/../../../src/security/credentials.json'); // <--- IMPORTANT: Update this path!
+//define('CREDENTIALS_FILE', '/get-quote/src/security/credentials.json'); // <--- IMPORTANT: Update this path!
+define('CREDENTIALS_FILE', __DIR__ . '/../../../src/security/credentials.json');
 
 header('Content-Type: application/json'); // Set header for JSON response
 
