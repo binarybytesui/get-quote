@@ -1282,7 +1282,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                 return grouped;
             }
 
-            fetch('/get-quote/public/admin/api/get-products.php')
+            fetch('/get-quote/public/admin/api/products/getProducts.php')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
