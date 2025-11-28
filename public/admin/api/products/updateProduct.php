@@ -1,179 +1,142 @@
 <?php
-// /public/admin/api/products/updateProduct.php
 session_start();
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    http_response_code(403);
     echo json_encode(["success" => false, "error" => "Admin authentication required"]);
     exit;
 }
 
-// Security headers
+// SECURITY HEADERS
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
 header("Referrer-Policy: no-referrer");
 header("X-XSS-Protection: 1; mode=block");
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit;
+
+header("Content-Type: application/json");
 
 require_once __DIR__ . "/../../../../src/database/connection.php";
-require_once __DIR__ . "/../../../../src/helpers/response.php";
 require_once __DIR__ . "/../../../../src/helpers/sanitize.php";
 require_once __DIR__ . "/../../../../src/helpers/price.php";
 require_once __DIR__ . "/../../../../src/helpers/csrf.php";
 
-// allowed fields config
-$allowedFields = require __DIR__ . "/../../../../src/config/allowedProductFields.php";
+$allowed = require __DIR__ . "/../../../../src/config/allowedProductFields.php";
 
 $pdo = db();
 
-// read body (support JSON or form-data)
+// Read input
 $input = $_POST;
-$raw = file_get_contents('php://input');
+$raw = file_get_contents("php://input");
 if (empty($input) && $raw) {
     $json = json_decode($raw, true);
-    if (json_last_error() === JSON_ERROR_NONE) {
-        $input = $json;
-    }
+    if ($json !== null) $input = $json;
 }
 
 // CSRF
-$csrf = $input['csrf'] ?? ($_POST['csrf'] ?? '');
+$csrf = $input["csrf"] ?? "";
 if (!validateCsrfToken($csrf)) {
-    jsonError("Invalid CSRF token", 403);
+    echo json_encode(["success" => false, "error" => "Invalid CSRF token"]);
+    exit;
 }
 
-// Expect at minimum: id and a field to update.
-// Support two styles:
-// 1) Inline: id, field, value
-// 2) Full update: id with multiple fields
-
-$id = isset($input['id']) ? cleanInt($input['id']) : 0;
+$id = cleanInt($input["id"] ?? 0);
 if ($id <= 0) {
-    jsonError("Invalid product id", 400);
+    echo json_encode(["success" => false, "error" => "Invalid product id"]);
+    exit;
 }
 
-// mapping camelCase -> snake_case for convenience
-$fieldMap = [
-    "partNo" => "part_no",
-    "mainPrice" => "main_price",
-    "discountPercent" => "discount_percent",
-    "labourCharges" => "labour_charges",
-    "wireCost" => "wire_cost",
-    "extras" => "extras",
-    "category" => "category",
-    "name" => "name"
-];
+// Determine if inline update (field + value)
+if (isset($input["field"])) {
+    $field = $input["field"];
+    $value = $input["value"] ?? "";
 
-// If input has 'field' and 'value' do simple inline update
-if (isset($input['field']) && array_key_exists('value', $input)) {
-    $inField = $input['field'];
-    $inValue = $input['value'];
+    // Convert camelCase → snake_case
+    $camelMap = [
+        "partNo" => "part_no",
+        "mainPrice" => "main_price",
+        "discountPercent" => "discount_percent",
+        "labourCharges" => "labour_charges",
+        "wireCost" => "wire_cost"
+    ];
+    if (isset($camelMap[$field])) $field = $camelMap[$field];
 
-    // Map to snake_case if needed
-    $field = isset($fieldMap[$inField]) ? $fieldMap[$inField] : $inField;
-
-    if (!in_array($field, $allowedFields)) {
-        jsonError("Invalid field: $field", 400);
+    if (!in_array($field, $allowed)) {
+        echo json_encode(["success" => false, "error" => "Invalid field"]);
+        exit;
     }
 
-    // sanitize value based on field
-    if (in_array($field, ["main_price", "discount_percent", "labour_charges", "wire_cost"])) {
-        $value = cleanFloat($inValue);
-    } else {
-        $value = cleanString($inValue);
-    }
-
-    // If we update main_price or discount_percent we need to recalc price
+    // Price recalculation needed?
     if ($field === "main_price" || $field === "discount_percent") {
-        // fetch current other value
-        $stmt = $pdo->prepare("SELECT main_price, discount_percent FROM products WHERE id = ? AND deleted_at IS NULL");
+        $stmt = $pdo->prepare("SELECT main_price, discount_percent FROM products WHERE id=? AND deleted_at IS NULL");
         $stmt->execute([$id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch();
+
         if (!$row) {
-            jsonError("Product not found", 404);
+            echo json_encode(["success" => false, "error" => "Product not found"]);
+            exit;
         }
 
-        $mainPrice = ($field === "main_price") ? $value : (float)$row["main_price"];
-        $discount = ($field === "discount_percent") ? $value : (float)$row["discount_percent"];
+        $mainPrice = ($field === "main_price") ? cleanFloat($value) : $row["main_price"];
+        $discount  = ($field === "discount_percent") ? cleanFloat($value) : $row["discount_percent"];
         $newPrice = calculatePrice($mainPrice, $discount);
 
-        $sql = "UPDATE products SET {$field} = ?, price = ? WHERE id = ?";
-        $stmt = $pdo->prepare($sql);
-        $ok = $stmt->execute([$value, $newPrice, $id]);
+        $stmt = $pdo->prepare("UPDATE products SET $field=?, price=? WHERE id=?");
+        $stmt->execute([cleanFloat($value), $newPrice, $id]);
 
-        if (!$ok) jsonError("Update failed", 500);
-        jsonSuccess([], "Product updated");
-    } else {
-        // normal single-field update
-        $sql = "UPDATE products SET {$field} = ? WHERE id = ?";
-        $stmt = $pdo->prepare($sql);
-        $ok = $stmt->execute([$value, $id]);
-        if (!$ok) jsonError("Update failed", 500);
-        jsonSuccess([], "Product updated");
+        echo json_encode(["success" => true]);
+        exit;
     }
+
+    // Normal inline update
+    $stmt = $pdo->prepare("UPDATE products SET $field=? WHERE id=?");
+    $stmt->execute([cleanString($value), $id]);
+
+    echo json_encode(["success" => true]);
+    exit;
 }
 
-// Otherwise handle full update: sanitize provided allowed fields and update set
+// MULTI-FIELD UPDATE (from edit form)
 $updates = [];
 $params = [];
-foreach ($fieldMap as $k => $mapped) {
-    // allow both camelCase and snake_case keys
-    if (isset($input[$k]) || isset($input[$mapped])) {
-        $rawVal = $input[$k] ?? $input[$mapped];
-        if (in_array($mapped, ["main_price", "discount_percent", "labour_charges", "wire_cost"])) {
-            $val = cleanFloat($rawVal);
-        } else {
-            $val = cleanString($rawVal);
-        }
-        if (!in_array($mapped, $allowedFields)) continue;
-        $updates[] = "{$mapped} = ?";
-        $params[] = $val;
+
+foreach ($allowed as $f) {
+    if (isset($input[$f])) {
+        $raw = $input[$f];
+        $value = is_numeric($raw) ? cleanFloat($raw) : cleanString($raw);
+        $updates[] = "$f=?";
+        $params[] = $value;
     }
 }
 
-if (empty($updates)) {
-    jsonError("No updatable fields provided", 400);
+if (!$updates) {
+    echo json_encode(["success" => false, "error" => "No valid fields provided"]);
+    exit;
 }
 
-// If main_price or discount_percent included, recalc price
-$hasMain = false; $hasDiscount = false;
-foreach ($updates as $u) {
-    if (strpos($u, "main_price") !== false) $hasMain = true;
-    if (strpos($u, "discount_percent") !== false) $hasDiscount = true;
-}
-
-if ($hasMain || $hasDiscount) {
-    // fetch current ones (if not provided in $params we will use current)
-    $stmt = $pdo->prepare("SELECT main_price, discount_percent FROM products WHERE id = ? AND deleted_at IS NULL");
+// Recalc price if necessary
+if (isset($input["main_price"]) || isset($input["discount_percent"])) {
+    $stmt = $pdo->prepare("SELECT main_price, discount_percent FROM products WHERE id=?");
     $stmt->execute([$id]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$row) jsonError("Product not found", 404);
+    $row = $stmt->fetch();
 
-    // determine mainPrice and discount
-    // build a key=>value map from updates array to find values easily
-    // simpler: check input arrays
-    $mainPrice = isset($input['mainPrice']) ? cleanFloat($input['mainPrice']) : (isset($input['main_price']) ? cleanFloat($input['main_price']) : (float)$row['main_price']);
-    $discount = isset($input['discountPercent']) ? cleanFloat($input['discountPercent']) : (isset($input['discount_percent']) ? cleanFloat($input['discount_percent']) : (float)$row['discount_percent']);
+    $mainPrice = isset($input["main_price"]) ? cleanFloat($input["main_price"]) : $row["main_price"];
+    $discount  = isset($input["discount_percent"]) ? cleanFloat($input["discount_percent"]) : $row["discount_percent"];
+    $newPrice  = calculatePrice($mainPrice, $discount);
 
-    $newPrice = calculatePrice($mainPrice, $discount);
-    $updates[] = "price = ?";
+    $updates[] = "price=?";
     $params[] = $newPrice;
 }
 
-// finalize update statement
 $params[] = $id;
-$sql = "UPDATE products SET " . implode(", ", $updates) . " WHERE id = ?";
-$stmt = $pdo->prepare($sql);
-$ok = $stmt->execute($params);
-if (!$ok) jsonError("Failed to update product", 500);
 
-jsonSuccess([], "Product updated");
+$sql = "UPDATE products SET " . implode(", ", $updates) . " WHERE id=?";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+
+echo json_encode(["success" => true]);
+?>

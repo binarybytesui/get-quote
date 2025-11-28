@@ -1,10 +1,19 @@
 <?php
-// /src/helpers/price.php will update the price calculation logic
-function calculatePrice($mainPrice, $discountPercent) {
+// /src/helpers/price.php
+
+function calculatePrice($mainPrice, $discountPercent, $labourCharges = 0, $wireCost = 0) {
+
     $main = (float) $mainPrice;
     $discount = (float) $discountPercent;
-    if ($main <= 0) return 0.00;
-    $price = $main - ($main * ($discount / 100));
-    // Keep two decimal places like your schema decimal(12,2)
-    return round($price, 2);
+    $labour = (float) $labourCharges;
+    $wire = (float) $wireCost;
+
+    // Step 1: apply discount
+    $discountAmount = $main * ($discount / 100);
+    $basePrice = $main - $discountAmount;
+
+    // Step 2: add labour & wire
+    $total = $basePrice + $labour + $wire;
+
+    return round($total, 2);
 }
