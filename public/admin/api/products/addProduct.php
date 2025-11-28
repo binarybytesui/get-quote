@@ -17,9 +17,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit;
-}
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit;
 
 header("Content-Type: application/json");
 
@@ -31,7 +29,7 @@ require_once __DIR__ . "/../../../../src/validators/productValidator.php";
 
 $pdo = db();
 
-// Read input (POST or JSON)
+// Read body(JSON or POST)
 $input = $_POST;
 $raw = file_get_contents("php://input");
 if (empty($input) && $raw) {
@@ -39,7 +37,7 @@ if (empty($input) && $raw) {
     if ($json !== null) $input = $json;
 }
 
-// CSRF check
+// CSRF
 $csrf = $input["csrf"] ?? "";
 if (!validateCsrfToken($csrf)) {
     echo json_encode(["success" => false, "error" => "Invalid CSRF token"]);
@@ -54,7 +52,7 @@ $mainPrice = cleanFloat($input["mainPrice"] ?? 0);
 $discountPercent = cleanFloat($input["discountPercent"] ?? 0);
 $labourCharges = cleanFloat($input["labourCharges"] ?? 0);
 $wireCost = cleanFloat($input["wireCost"] ?? 0);
-$extras = $input["extras"] ?? null;
+$extras = isset($input["extras"]) ? cleanString($input["extras"]) : null;
 
 // Validate
 $validation = validateProduct([
@@ -69,7 +67,8 @@ if ($validation !== true) {
     exit;
 }
 
-$price = calculatePrice($mainPrice, $discountPercent);
+// NEW PRICE FORMULA
+$price = calculatePrice($mainPrice, $discountPercent, $labourCharges, $wireCost);
 
 // Insert
 $sql = "INSERT INTO products 
@@ -83,7 +82,7 @@ $ok = $stmt->execute([
 ]);
 
 if (!$ok) {
-    echo json_encode(["success" => false, "error" => "Database insert failed"]);
+    echo json_encode(["success" => false, "error" => "Failed to insert product"]);
     exit;
 }
 

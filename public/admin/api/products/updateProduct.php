@@ -11,6 +11,7 @@ header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
 header("Referrer-Policy: no-referrer");
 header("X-XSS-Protection: 1; mode=block");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
@@ -25,11 +26,11 @@ require_once __DIR__ . "/../../../../src/helpers/sanitize.php";
 require_once __DIR__ . "/../../../../src/helpers/price.php";
 require_once __DIR__ . "/../../../../src/helpers/csrf.php";
 
-$allowed = require __DIR__ . "/../../../../src/config/allowedProductFields.php";
+$allowedFields = require __DIR__ . "/../../../../src/config/allowedProductFields.php";
 
 $pdo = db();
 
-// Read input
+// Read body JSON or POST
 $input = $_POST;
 $raw = file_get_contents("php://input");
 if (empty($input) && $raw) {
@@ -46,94 +47,121 @@ if (!validateCsrfToken($csrf)) {
 
 $id = cleanInt($input["id"] ?? 0);
 if ($id <= 0) {
-    echo json_encode(["success" => false, "error" => "Invalid product id"]);
+    echo json_encode(["success" => false, "error" => "Invalid product ID"]);
     exit;
 }
 
-// Determine if inline update (field + value)
+// Inline update: field + value
 if (isset($input["field"])) {
+
     $field = $input["field"];
     $value = $input["value"] ?? "";
 
-    // Convert camelCase → snake_case
+    // Map camelCase → snake_case
     $camelMap = [
         "partNo" => "part_no",
         "mainPrice" => "main_price",
         "discountPercent" => "discount_percent",
         "labourCharges" => "labour_charges",
-        "wireCost" => "wire_cost"
+        "wireCost" => "wire_cost",
+        "extras" => "extras",
     ];
     if (isset($camelMap[$field])) $field = $camelMap[$field];
 
-    if (!in_array($field, $allowed)) {
+    // Validate field
+    if (!in_array($field, $allowedFields)) {
         echo json_encode(["success" => false, "error" => "Invalid field"]);
         exit;
     }
 
-    // Price recalculation needed?
-    if ($field === "main_price" || $field === "discount_percent") {
-        $stmt = $pdo->prepare("SELECT main_price, discount_percent FROM products WHERE id=? AND deleted_at IS NULL");
-        $stmt->execute([$id]);
-        $row = $stmt->fetch();
+    // Fetch current values
+    $stmt = $pdo->prepare("SELECT main_price, discount_percent, labour_charges, wire_cost 
+                           FROM products WHERE id=? AND deleted_at IS NULL");
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
 
-        if (!$row) {
-            echo json_encode(["success" => false, "error" => "Product not found"]);
-            exit;
-        }
-
-        $mainPrice = ($field === "main_price") ? cleanFloat($value) : $row["main_price"];
-        $discount  = ($field === "discount_percent") ? cleanFloat($value) : $row["discount_percent"];
-        $newPrice = calculatePrice($mainPrice, $discount);
-
-        $stmt = $pdo->prepare("UPDATE products SET $field=?, price=? WHERE id=?");
-        $stmt->execute([cleanFloat($value), $newPrice, $id]);
-
-        echo json_encode(["success" => true]);
+    if (!$row) {
+        echo json_encode(["success" => false, "error" => "Product not found"]);
         exit;
     }
 
-    // Normal inline update
-    $stmt = $pdo->prepare("UPDATE products SET $field=? WHERE id=?");
-    $stmt->execute([cleanString($value), $id]);
+    // Correct values for recalculation
+    $mainPrice = ($field === "main_price") ? cleanFloat($value) : $row["main_price"];
+    $discount  = ($field === "discount_percent") ? cleanFloat($value) : $row["discount_percent"];
+    $labour    = ($field === "labour_charges") ? cleanFloat($value) : $row["labour_charges"];
+    $wire      = ($field === "wire_cost") ? cleanFloat($value) : $row["wire_cost"];
+
+    // Recalculate price using NEW FORMULA
+    $newPrice = calculatePrice($mainPrice, $discount, $labour, $wire);
+
+    // Update
+    $stmt = $pdo->prepare("UPDATE products SET $field=?, price=? WHERE id=?");
+    $stmt->execute([cleanString($value), $newPrice, $id]);
 
     echo json_encode(["success" => true]);
     exit;
 }
 
-// MULTI-FIELD UPDATE (from edit form)
+// ------------------------------------------------------
+// FULL UPDATE (From Product Edit Form)
+// ------------------------------------------------------
+
 $updates = [];
 $params = [];
 
-foreach ($allowed as $f) {
+$mainPrice = null;
+$discountPercent = null;
+$labourCharges = null;
+$wireCost = null;
+
+// Loop allowed fields
+foreach ($allowedFields as $f) {
     if (isset($input[$f])) {
-        $raw = $input[$f];
-        $value = is_numeric($raw) ? cleanFloat($raw) : cleanString($raw);
+
+        $val = $input[$f];
+        $clean = is_numeric($val) ? cleanFloat($val) : cleanString($val);
+
         $updates[] = "$f=?";
-        $params[] = $value;
+        $params[] = $clean;
+
+        // track fields for recalculation
+        if ($f === "main_price") $mainPrice = $clean;
+        if ($f === "discount_percent") $discountPercent = $clean;
+        if ($f === "labour_charges") $labourCharges = $clean;
+        if ($f === "wire_cost") $wireCost = $clean;
     }
 }
 
+// If none provided
 if (!$updates) {
     echo json_encode(["success" => false, "error" => "No valid fields provided"]);
     exit;
 }
 
-// Recalc price if necessary
-if (isset($input["main_price"]) || isset($input["discount_percent"])) {
-    $stmt = $pdo->prepare("SELECT main_price, discount_percent FROM products WHERE id=?");
-    $stmt->execute([$id]);
-    $row = $stmt->fetch();
+// Fetch current values to fill missing ones
+$stmt = $pdo->prepare("SELECT main_price, discount_percent, labour_charges, wire_cost FROM products WHERE id=?");
+$stmt->execute([$id]);
+$existing = $stmt->fetch();
 
-    $mainPrice = isset($input["main_price"]) ? cleanFloat($input["main_price"]) : $row["main_price"];
-    $discount  = isset($input["discount_percent"]) ? cleanFloat($input["discount_percent"]) : $row["discount_percent"];
-    $newPrice  = calculatePrice($mainPrice, $discount);
-
-    $updates[] = "price=?";
-    $params[] = $newPrice;
+if (!$existing) {
+    echo json_encode(["success" => false, "error" => "Product not found"]);
+    exit;
 }
+
+$mainPrice = $mainPrice ?? $existing["main_price"];
+$discountPercent = $discountPercent ?? $existing["discount_percent"];
+$labourCharges = $labourCharges ?? $existing["labour_charges"];
+$wireCost = $wireCost ?? $existing["wire_cost"];
+
+// Final NEW PRICE CALCULATION
+$newPrice = calculatePrice($mainPrice, $discountPercent, $labourCharges, $wireCost);
+
+$updates[] = "price=?";
+$params[] = $newPrice;
 
 $params[] = $id;
 
+// Final query
 $sql = "UPDATE products SET " . implode(", ", $updates) . " WHERE id=?";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
