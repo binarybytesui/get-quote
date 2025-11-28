@@ -1,48 +1,31 @@
 <?php
 session_start();
-
-// ADMIN PROTECTION
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     http_response_code(403);
-    echo json_encode(["error" => "Admin authentication required"]);
+    echo json_encode(["error"=>"Admin authentication required"]);
     exit;
 }
-
-// SECURITY HEADERS
+header("Content-Type: application/json");
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
 header("Referrer-Policy: no-referrer");
 header("X-XSS-Protection: 1; mode=block");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 
-// CORS
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
-header("Content-Type: application/json");
-
 require_once __DIR__ . "/../../../../src/database/connection.php";
 $pdo = db();
 
-// Keep OLD UI-compatible format
-$sql = "SELECT id, category, name, part_no, main_price, discount_percent, price, labour_charges, wire_cost
+$sql = "SELECT id, category, name, part_no, main_price, discount_percent, price, labour_charges, wire_cost, extras, deleted_at
         FROM products
-        WHERE deleted_at IS NULL
-        ORDER BY category, name";
+        WHERE deleted_at IS NOT NULL
+        ORDER BY deleted_at DESC, id DESC";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute();
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Convert rows to camelCase fields (UI expects this)
 $converted = [];
-foreach ($data as $row) {
+foreach ($data as $row){
     $converted[] = [
         "id" => (int)$row["id"],
         "category" => $row["category"],
@@ -52,11 +35,11 @@ foreach ($data as $row) {
         "discountPercent" => (float)$row["discount_percent"],
         "price" => (float)$row["price"],
         "labourCharges" => (float)$row["labour_charges"],
-        "wireCost" => (float)$row["wire_cost"]
+        "wireCost" => (float)$row["wire_cost"],
+        "extras" => $row["extras"],
+        "deletedAt" => $row["deleted_at"]
     ];
 }
 
-// IMPORTANT: Return EXACT old format (NO jsonSuccess wrapper)
 echo json_encode($converted);
 exit;
-?>

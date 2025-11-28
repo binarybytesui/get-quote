@@ -550,7 +550,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                         <div id="product-list-B">
                                         </div>
                                         <button type="button" class="btn btn-add-product mx-auto d-block mt-3"
-                                            data-category-key="mcb_data"><i class="bi bi-plus-circle me-2"></i> Add Product
+                                            data-category-key="mcb"><i class="bi bi-plus-circle me-2"></i> Add Product
                                         </button>
                                     </div>
                                 </div>
@@ -581,7 +581,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                         <div id="product-list-C">
                                         </div>
                                         <button type="button" class="btn btn-add-product mx-auto d-block mt-3"
-                                            data-category-key="rccb_data"><i class="bi bi-plus-circle me-2"></i> Add Product
+                                            data-category-key="rccb"><i class="bi bi-plus-circle me-2"></i> Add Product
                                         </button>
                                     </div>
                                 </div>
@@ -779,7 +779,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
                                         <div id="product-list-I">
                                         </div>
                                         <button type="button" class="btn btn-add-product mx-auto d-block mt-3"
-                                            data-category-key="board_materials"> <i class="bi bi-plus-circle me-2"></i> Add
+                                            data-category-key="boardMaterials"> <i class="bi bi-plus-circle me-2"></i> Add
                                             Product
                                         </button>
                                     </div>
@@ -845,14 +845,14 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
         // Mapping for category keys to their display titles and product list container IDs
         const categoryMap = {
             "sockets": { title: "Sockets", listIdSuffix: "A", collapseId: "collapseCategoryA" },
-            "mcb_data": { title: "MCB Data", listIdSuffix: "B", collapseId: "collapseCategoryB" },
-            "rccb_data": { title: "RCCB Data", listIdSuffix: "C", collapseId: "collapseCategoryC" },
+            "mcb": { title: "MCB", listIdSuffix: "B", collapseId: "collapseCategoryB" },
+            "rccb": { title: "RCCB", listIdSuffix: "C", collapseId: "collapseCategoryC" },
             "connectors": { title: "Connectors", listIdSuffix: "D", collapseId: "collapseCategoryD" },
             "plugs": { title: "Plugs", listIdSuffix: "E", collapseId: "collapseCategoryE" },
             "inlets": { title: "Inlets", listIdSuffix: "F", collapseId: "collapseCategoryF" },
             "indicators": { title: "Indicators", listIdSuffix: "G", collapseId: "collapseCategoryG" },
             "accessories": { title: "Accessories", listIdSuffix: "H", collapseId: "collapseCategoryH" },
-            "board_materials": { title: "Board Materials", listIdSuffix: "I", collapseId: "collapseCategoryI" },
+            "boardMaterials": { title: "Board Materials", listIdSuffix: "I", collapseId: "collapseCategoryI" },
             "Add-Ons": { title: "Add-Ons", listIdSuffix: "J", collapseId: "collapseCategoryJ" }
         };
 
@@ -943,7 +943,7 @@ $admin_username = $is_logged_in ? htmlspecialchars($_SESSION['username'], ENT_QU
 
         /**
          * Adds a new product selection row to the specified category's product list.
-         * @param {string} categoryKey The key of the product category (e.g., 'sockets', 'mcb_data').
+         * @param {string} categoryKey The key of the product category (e.g., 'sockets', 'mcb').
          */
         function addNewProductRow(categoryKey) {
             const listIdSuffix = categoryMap[categoryKey] ? categoryMap[categoryKey].listIdSuffix : null;
