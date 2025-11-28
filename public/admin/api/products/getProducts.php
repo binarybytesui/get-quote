@@ -29,26 +29,33 @@ header("Content-Type: application/json");
 require_once __DIR__ . "/../../../../src/database/connection.php";
 $pdo = db();
 
-$sql = "SELECT * FROM products ORDER BY category, name";
+// Keep OLD UI-compatible format
+$sql = "SELECT id, category, name, part_no, main_price, discount_percent, price, labour_charges, wire_cost
+        FROM products
+        WHERE deleted_at IS NULL
+        ORDER BY category, name";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute();
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Convert to camelCase
+// Convert rows to camelCase fields (UI expects this)
 $converted = [];
 foreach ($data as $row) {
     $converted[] = [
-        "id" => $row["id"],
+        "id" => (int)$row["id"],
         "category" => $row["category"],
         "name" => $row["name"],
         "partNo" => $row["part_no"],
-        "mainPrice" => $row["main_price"],
-        "discountPercent" => $row["discount_percent"],
-        "price" => $row["price"],
-        "labourCharges" => $row["labour_charges"],
-        "wireCost" => $row["wire_cost"]
+        "mainPrice" => (float)$row["main_price"],
+        "discountPercent" => (float)$row["discount_percent"],
+        "price" => (float)$row["price"],
+        "labourCharges" => (float)$row["labour_charges"],
+        "wireCost" => (float)$row["wire_cost"]
     ];
 }
 
+// IMPORTANT: Return EXACT old format (NO jsonSuccess wrapper)
 echo json_encode($converted);
+exit;
 ?>
